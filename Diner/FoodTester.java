@@ -1,3 +1,10 @@
+/*
+ * Chris Huber <chuber2@mail.ccsf.edu>
+ * CS211S, Jessica Masters
+ * 11/28/2020
+ * Assignment Eleven: Concurrency
+ */
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -14,12 +21,39 @@ public class FoodTester {
 		foodList.add(new Food("Bread", 1, 1));
 		foodList.add(new Food("Fried Green Tomatoes", 2, 1));
 		
-		BlockingQueue queue = new ArrayBlockingQueue(1024);
+		BlockingQueue<Food> foodQueue = new ArrayBlockingQueue<>(100);
+		BlockingQueue<Food> serveQueue = new ArrayBlockingQueue<>(3);
+		
 		// INITIALIZE AND START YOUR THREADS HERE!
-		Thread cooker = new Thread(new CookThread(foodList));
+		// producer thread
+		/*
+		new Thread(((new CookThread(foodList)) ->
+			try {
+				while (foodList.size() > 0) {
+					foodQueue.put(foodList.get(0));
+					foodList.remove(0);
+				}
+			}
+			catch (InterruptedException ie) {
+				ie.printStackTrace();
+			}
+		}).start();
+		*/
+		
+		try {
+			while (foodList.size() > 0) {
+				foodQueue.put(foodList.get(0));
+				foodList.remove(0);
+			}
+		}
+		catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+		
+		Thread cooker = new Thread(new CookThread(foodQueue, serveQueue));
 		cooker.start();
-		Thread server = new Thread(new ServeThread());
-		server.start();
+		// Thread server = new Thread(new ServeThread(serveQueue));
+		// server.start();
 		
       // IMPORTANT NOTE!!! 
 		// Some IDEs have more than one thread active. You might need to 
@@ -39,10 +73,8 @@ public class FoodTester {
 		// USE STREAMS HERE ON THE INITIAL LIST! 
 		// NOTE: THIS PART HAS NOTHING TO DO WITH THE THREADS- JUST MORE STREAM PRACTICE! :)
 		// USE METHOD REFERENCES!
-		int totalCookTime = -1;
-		int totalServeTime = -1;
-		System.out.println("Total Cook Time = " + totalCookTime);
-		System.out.println("Total Serve Time = " + totalServeTime);	
+		System.out.println("Total Cook Time = " + CookThread.totalCookTime);
+		System.out.println("Total Serve Time = " + ServeThread.totalServeTime);	
 		System.out.println("Program Time = " + programTimeCounter);
 		
 	}
